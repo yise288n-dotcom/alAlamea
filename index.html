@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="ar">
+  <head>
+    <script src="js/qrcode.min.js"></script>
+
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الكتالوج الذكي الشامل السحابي - نظام المعارض المتكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght=400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Cairo', sans-serif;
+        background-color: #f9f9f9;
+        direction: rtl;
+        padding-top: 12vh; 
+        scroll-behavior: smooth;
+      }
+      
+      :root {
+        --mainColor: #002f6c;
+        --accentColor: #28a745;
+        --offerColor: #dc3545;
+        --whatsappColor: #25D366;
+        --bulkColor: #fd7e14;
+      }
+      
+      .selector {
+        height: 10vh; background-color: #eee; border-bottom: 2px solid gray;
+        position: fixed; top: 0; left: 0; width: 100%; display: flex;
+        align-items: center; justify-content: space-between; padding: 0 5%;
+        z-index: 1000; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      .logo-container { max-width: 15%; height: 8vh; display: flex; align-items: center; justify-content: center; }
+      .logo { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
+      
+      .admin-controls { display: flex; gap: 8px; align-items: center; }
+      .admin-toggle-btn {
+        background-color: var(--mainColor); color: white; border: none; padding: 8px 12px;
+        border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 3vw; transition: background 0.3s;
+      }
+      .change-pass-btn {
+        background-color: #6c757d; color: white; border: none; padding: 8px 12px;
+        border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 3vw; display: none;
+      }
+      
+      .selector-i { position: relative; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+      .selector-i > p { text-wrap: nowrap; font-size: 3.5vw; font-weight: bold; }
+      .menu-icon { display: inline-flex; flex-direction: column; justify-content: space-between; width: 22px; height: 16px; color: black; }
+      .menu-icon span { display: block; width: 100%; height: 2px; background-color: currentColor; border-radius: 2px; }
+      
+      .selector-span {
+        position: absolute; background-color: white; top: 100%; left: 0;
+        width: 80vw; display: flex; flex-wrap: wrap; justify-content: center;
+        border: 2px solid black; border-radius: 10px; visibility: hidden; z-index: 1010; padding: 15px; gap: 8px;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.3); max-height: 70vh; overflow-y: auto;
+      }
+      .selector-i:hover .selector-span { visibility: visible; }
+      .selector-span > a {
+        border: 1px solid gray; border-radius: 5px; padding: 5px 10px;
+        text-decoration: none; color: black; font-size: 3vw; background: #f0f0f0;
+      }
+      .selector-span > a.offer-link { background: var(--offerColor); color: white; border-color: var(--offerColor); font-weight: bold; }
+
+      .admin-panel {
+        background-color: #fff; padding: 20px; margin: 20px auto; width: 95%;
+        border: 3px dashed var(--mainColor); border-radius: 10px; display: none;
+      }
+      .admin-section-box {
+        background: #f8f9fa; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px;
+      }
+      .form-group { margin-bottom: 15px; }
+      .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+      .form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+      .form-group input[type="color"] { height: 50px; padding: 2px; cursor: pointer; }
+      .form-group.checkbox-group { display: flex; align-items: center; gap: 10px; }
+      .form-group.checkbox-group input { width: auto; cursor: pointer; scale: 1.3; }
+
+      .btn-add { background-color: var(--accentColor); color: white; border: none; padding: 12px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 4vw; }
+      .btn-bulk-add { background-color: var(--bulkColor); color: white; margin-top: 8px; }
+      .btn-update { background-color: #007bff; color: white; display: none; }
+      
+      .stock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+      .temp-doors-container {
+        margin-top: 15px; background: #fff3cd; border: 1px solid #ffeeba;
+        padding: 10px; border-radius: 5px; display: none;
+      }
+      .temp-door-item {
+        background: white; padding: 8px; margin-bottom: 5px; border-radius: 4px;
+        display: flex; justify-content: space-between; align-items: center; font-size: 3.5vw; border: 1px solid #ccc;
+      }
+
+      .section-title { text-align: center; font-size: 8vw; margin: 30px 0 10px; background: var(--mainColor); color: white; padding: 10px; transition: background 0.3s; }
+      .section-title.offers-title { background: var(--offerColor); }
+      
+      .img-div { text-align: center; margin-bottom: 40px; width: 90%; margin-left: auto; margin-right: auto; position: relative; scroll-margin-top: 14vh; }
+      .img { width: 100%; border-radius: 10px 10px 0 0; box-shadow: 0 4px 10px gray; max-height: 70vh; object-fit: cover; }
+      .dynamic-desc { border: 2px solid black; border-top: none; padding: 15px; border-radius: 0 0 10px 10px; font-weight: bold; background: white; font-size: 4vw; line-height: 1.6; }
+      
+      .stock-info { display: block; margin-top: 5px; font-size: 3.5vw; color: #555; background: #f0f0f0; padding: 4px; border-radius: 5px; }
+      .out-of-stock { color: var(--offerColor); font-weight: bold; }
+      .in-stock { color: var(--accentColor); font-weight: bold; }
+      .old-price { color: var(--offerColor); text-decoration: line-through; margin-left: 10px; font-size: 3.5vw; }
+      .new-price { color: var(--accentColor); font-size: 4.5vw; }
+      .normal-price { color: var(--mainColor); }
+      .offer-badge {
+        position: absolute; top: 25px; right: 10px; background: var(--offerColor);
+        color: white; padding: 5px 15px; font-weight: bold; border-radius: 5px;
+        font-size: 4vw; box-shadow: 0 2px 5px rgba(0,0,0,0.3); z-index: 5;
+      }
+      .door-select-wrapper {
+        position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.95);
+        padding: 8px 12px; border-radius: 5px; border: 2px solid var(--mainColor);
+        z-index: 10; display: none; align-items: center; gap: 6px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      }
+      .door-select-wrapper input { scale: 1.5; cursor: pointer; }
+
+      .admin-actions { display: none; margin-top: 10px; background: #f0f0f0; padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+      .btn-action { color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 3vw; margin: 2px; }
+      .btn-del { background-color: #dc3545; }
+      .btn-add-offer { background-color: #ffc107; color: black; }
+      .btn-rem-offer { background-color: #17a2b8; }
+      .btn-edit { background-color: #6f42c1; }
+
+      .btn-whatsapp {
+        display: block; background-color: var(--whatsappColor); color: white; text-decoration: none;
+        text-align: center; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 4vw;
+        margin-top: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.15); transition: background 0.3s;
+      }
+      .btn-whatsapp:hover { background-color: #1ebd54; }
+      .btn-whatsapp i { margin-left: 8px; font-size: 5vw; vertical-align: middle; }
+      
+      .loading-spinner { text-align: center; font-size: 5vw; padding: 20px; color: var(--mainColor); font-weight: bold; }
+
+      #catalogContainer {
+        width: 95%;
+        margin: 0 auto;
+      }
+
+      #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+      #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+      #woodContainer {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 15px 0;
+      }
+
+      @media (max-width:770px) {
+        body { padding-top: 12vh; }
+        .selector { padding: 0 3%; }
+        .selector-i > p { font-size: 3.8vw; }
+        .admin-toggle-btn, .change-pass-btn { font-size: 3.5vw; padding: 6px 10px; }
+        .section-title { font-size: 6.5vw; margin: 20px 0 10px; border-radius: 8px; }
+        .img-div { width: 100%; margin-bottom: 25px; }
+        .dynamic-desc { font-size: 4.2vw; padding: 12px; }
+        .btn-whatsapp { font-size: 4.5vw; padding: 10px; }
+        .btn-action { font-size: 3.5vw; padding: 10px; width: 47%; display: inline-block; }
+        .door-select-wrapper { top: 10px; left: 10px; padding: 4px 8px; }
+      }
+
+      @media (max-height:350px) {
+        .selector { height: 14vh; }
+        body { padding-top: 16vh; }
+        .logo-container { height: 12vh; }
+        .img { max-height: 55vh; }
+        .selector-span { width: 90vw; max-height: 60vh; }
+      }
+
+      @media (min-width:771px) {
+        body { padding-top: 90px; }
+        .selector { height: 80px; padding: 0 40px; }
+        .logo-container { max-width: 120px; height: 70px; }
+        .selector-i > p { font-size: 16px; }
+        .admin-toggle-btn, .change-pass-btn { font-size: 15px; padding: 8px 16px; }
+        .selector-span { width: 450px; gap: 10px; }
+        .selector-span > a { font-size: 14px; padding: 6px 12px; }
+        .section-title { font-size: 28px; padding: 12px; border-radius: 8px; }
+        #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+        #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+        #woodContainer {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 25px;
+        }
+        .img-div { width: 100%; margin: 0; }
+        .img { height: 450px; object-fit: cover; }
+        .dynamic-desc { font-size: 16px; height: 180px; display: flex; flex-direction: column; justify-content: space-between; }
+        .btn-whatsapp { font-size: 16px; padding: 8px; }
+        .btn-whatsapp i { font-size: 18px; }
+        .btn-action { font-size: 13px; padding: 6px 10px; }
+        .door-select-wrapper { padding: 6px 10px; }
+        .door-select-wrapper label { font-size: 13px !important; }
+      }
+
+      @media (min-width:996px) {
+        #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+        #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+        #woodContainer {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 30px;
+        }
+        .img { height: 480px; }
+        .dynamic-desc { font-size: 17px; height: 190px; }
+        .admin-panel { max-width: 900px; }
+        .admin-panel .stock-grid { grid-template-columns: repeat(2, 1fr); }
+      }
+
+      @media (min-width:1300px) {
+        #catalogContainer { max-width: 1280px; }
+        #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+        #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+        #woodContainer {
+          grid-template-columns: repeat(4, 1fr);
+          gap: 25px;
+        }
+        .img { height: 420px; }
+        .dynamic-desc { font-size: 16px; height: 200px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="selector">
+      <div class="logo-container">
+        <img id="siteLogo" class="logo" src="img/logo.png" onerror="this.src='https://placehold.co/150x80?text=Logo'" alt="Logo">
+      </div>
+      <div class="admin-controls">
+        <button class="admin-toggle-btn" id="adminMainBtn" onclick="checkAdminPassword()">الأدمن 🛠️</button>
+        <button id="changePassBtn" class="change-pass-btn" onclick="changeAdminPassword()">قفل السر 🔐</button>
+      </div>
+      <div class="selector-i">
+        <p>الأقسام والأنواع</p>
+        <div class="menu-icon"><span></span><span></span><span></span></div>
+        <div class="selector-span">
+          <a href="#offers-section" class="offer-link">🔥 عروض خاصة</a>
+          <a href="#turki">مصفح تركي عادي</a>
+          <a href="#turki10">🇹🇷 مصفح تركي 10سم</a>
+          <a href="#turki11">🇹🇷 مصفح تركي 11سم</a>
+          <a href="#masri">تركي تقفيل مصري</a>
+          <a href="#shini">مصفح صيني</a>
+          <a href="#mصفح90">🚪 مصفح عرض 90سم</a>
+          <a href="#bbc-section">بي بي سي</a>
+          <a href="#wood-section">أبواب خشب كلي</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel">
+      
+      <div class="admin-section-box" style="border: 2px solid var(--bulkColor); background: #fffdf9;">
+         <h4 style="color: var(--bulkColor); margin-bottom: 12px;"><i class="fas fa-tools"></i> وحدة التحكم الجماعي بالأبواب (تعديل السعر والسمك والاستخدام للمجمل) 💰⚡</h4>
+         <p style="font-size: 13px; color: #666; margin-bottom: 10px;">علم على الأبواب اللي عايزها من الكتالوج تحت بالـ Checkbox، أو اختار قسم كامل من هنا لتطبيق التعديلات فوراً.</p>
+         
+         <div class="form-group">
+            <label>اختر النطاق المستهدف للتعديل الجماعي:</label>
+            <select id="bulkPriceFilterGroup">
+               <option value="selected_only">الأبواب المحددة بالـ Checkbox بالأسفل فقط 🎯</option>
+               <option value="all">كل أبواب المعرض بلا استثناء 🌍</option>
+               <option value="turki">قسم مصفح تركي بالكامل</option>
+               <option value="masri">قسم تركي تقفيل مصري بالكامل</option>
+               <option value="shini">قسم مصفح صيني بالكامل</option>
+               <option value="bbc">قسم بي بي سي بالكامل</option>
+               <option value="wood">قسم الخشب بالكامل</option>
+            </select>
+         </div>
+
+         <div style="background: #f1f3f5; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px dashed #ced4da;">
+            <h5 style="margin-bottom: 8px; color: #495057;"><i class="fas fa-coins"></i> أولاً: التعديل الجماعي للأسعار</h5>
+            <div class="stock-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 10px;">
+               <div>
+                  <label style="font-size: 13px;">العملية الحسابية:</label>
+                  <select id="bulkPriceAction">
+                     <option value="plus">زيادة السعر بمقدار (+) </option>
+                     <option value="minus">تخفيض السعر بمقدار (-)</option>
+                  </select>
+               </div>
+               <div>
+                  <label style="font-size: 13px;">المبلغ (بالجنيه):</label>
+                  <input type="number" id="bulkPriceAmount" placeholder="مثال: 1000 أو 500">
+               </div>
+            </div>
+            <button class="btn-add" style="background-color: var(--bulkColor); margin-top: 5px; padding: 8px; font-size: 3.5vw;" onclick="runBulkPriceUpdater()">
+               تحديث أسعار البضاعة المحددة في السحاب لايف 💸
+            </button>
+         </div>
+
+         <div style="background: #e8f4fd; padding: 12px; border-radius: 6px; margin-bottom: 12px; border: 1px dashed #bbeeeb;">
+            <h5 style="margin-bottom: 8px; color: #007bff;"><i class="fas fa-ruler-combined"></i> ثانياً: التعديل الجماعي لسُمك الخشب</h5>
+            <div class="form-group">
+               <label style="font-size: 13px;">اختر السُمك الجديد لتطبيقه جماعياً:</label>
+               <select id="bulkThicknessAction">
+                  <option value="4ملي">4 ملي</option>
+                  <option value="8ملي">8 ملي</option>
+                  <option value="8ملي + 4ملي">8 ملي + 4 ملي</option>
+                  <option value="كامل">خشب كلي</option>
+               </select>
+            </div>
+            <button class="btn-add" style="background-color: #007bff; margin-top: 5px; padding: 8px; font-size: 3.5vw;" onclick="runBulkThicknessUpdater()">
+               تحديث سُمك الأبواب الخشبية المحددة سحابياً 📏
+            </button>
+         </div>
+
+         <div style="background: #e8fdf0; padding: 12px; border-radius: 6px; border: 1px dashed #a8e6cf;">
+            <h5 style="margin-bottom: 8px; color: #28a745;"><i class="fas fa-door-open"></i> ثالثاً: التعديل الجماعي للاستخدام (للخشب وبي بي سي)</h5>
+            <div class="form-group">
+               <label style="font-size: 13px;">اختر نوع الاستخدام الجديد لتطبيقه جماعياً:</label>
+               <select id="bulkUsageAction">
+                  <option value="غرفة">غرفة</option>
+                  <option value="حمام">حمام</option>
+                  <option value="غرفة وحمام">غرفة وحمام معاً</option>
+                  <option value="شقة">شقة 🏠</option>
+                  <option value="غرفة وحمام وشقة">غرفة وحمام وشقة ✨</option>
+               </select>
+            </div>
+            <button class="btn-add" style="background-color: #28a745; margin-top: 5px; padding: 8px; font-size: 3.5vw;" onclick="runBulkUsageUpdater()">
+               تحديث استخدام الأبواب المحددة في السحاب 🚪✨
+            </button>
+         </div>
+
+      </div>
+
+      <div class="admin-panel" id="adminPanel"></div> <!-- Keep structural elements -->
+      
+      <div class="admin-section-box">
+         <h4 style="color: var(--mainColor); margin-bottom: 10px;"><i class="fas fa-cloud-upload-alt"></i> إعدادات الهوية السحابية 🌐</h4>
+         <div class="form-group">
+            <label>تغيير لوجو المعرض في السحاب: 📸</label>
+            <input type="file" id="logoFile" accept="image/*" onchange="uploadLogoToCloud()">
+         </div>
+         <div class="form-group">
+            <label>اختر اللون الرئيسي للموقع في السحاب: 🎨</label>
+            <input type="color" id="mainColorPicker" value="#002f6c" onchange="saveColorToCloud(this.value)">
+         </div>
+         <div class="form-group">
+            <label>رقم واتساب صاحب المعرض السحابي: 📞</label>
+            <input type="text" id="ownerPhoneInput" value="201226580912" onchange="savePhoneToCloud(this.value)">
+         </div>
+      </div>
+
+      <div class="admin-section-box">
+          <h4 id="panelTitle" style="text-align: center; margin-bottom: 15px;">🛠️ إضافة وتعديل بضاعة (لايف سحابي)</h4>
+          <input type="hidden" id="editingDoorId" value="">
+
+          <div class="form-group" id="fileGroup"><label>صورة الباب: 📸</label><input type="file" id="doorFile" accept="image/*"></div>
+          
+          <div class="form-group">
+            <label>القسم الرئيسي للباب:</label>
+            <select id="doorMainType" onchange="updateSubOptions()">
+              <option value="turki">مصفح تركي</option>
+              <option value="masri">تركي تقفيل مصري</option>
+              <option value="shini">مصفح صيني</option>
+              <option value="bbc">بي بي سي (BBC)</option>
+              <option value="wood">خشب</option>
+            </select>
+          </div>
+
+          <div id="extraOptions"></div>
+
+          <div class="form-group checkbox-group" id="width90Group">
+             <input type="checkbox" id="isWidth90">
+             <label for="isWidth90">هل عرض هذا الباب 90 سم؟ (سيظهر in قسم مصفح 90سم تلقائياً) 🚪</label>
+          </div>
+
+          <div class="form-group">
+            <label>تحديد الكميات المتوفرة حسب الاتجاه: 🔢</label>
+            <div class="stock-grid">
+              <div>
+                <label style="font-size:12px; color:#555;">عدد قطع (يمين):</label>
+                <input type="number" id="stockRight" value="1" min="0">
+              </div>
+              <div>
+                <label style="font-size:12px; color:#555;">عدد قطع (شمال):</label>
+                <input type="number" id="stockLeft" value="0" min="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>هل يوجد عرض على هذا الباب? 🎁</label>
+            <select id="hasOffer" onchange="toggleOfferInput()">
+              <option value="no">لا، سعر عادي</option>
+              <option value="yes">نعم، يوجد عرض خصم</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="oldPriceGroup" style="display: none;">
+            <label style="color: var(--offerColor);">السعر القديم قبل الخصم (جنيه):</label>
+            <input type="number" id="doorOldPrice" placeholder="مثلاً: 9000">
+          </div>
+
+          <div class="form-group">
+            <label id="priceLabel">السعر الحالي للبيع (جنيه):</label>
+            <input type="number" id="doorPrice" placeholder="مثلاً: 8000">
+          </div>
+
+          <button id="submitBtn" class="btn-add" onclick="addNewDoor()">تثبيت هذا الباب لايف فوراً 🚀</button>
+          
+          <button id="bulkPrepareBtn" class="btn-add btn-bulk-add" onclick="prepareDoorForBulk()">
+             <i class="fas fa-plus"></i> ➕ تجهيز وإضافة باب آخر للقائمة (جملة)
+          </button>
+
+          <div class="temp-doors-container" id="tempDoorsContainer">
+              <h5 style="color:#856404; margin-bottom:8px;">📦 قائمة الأبواب الجاهزة للرفع بالجملة:</h5>
+              <div id="tempDoorsList"></div>
+              <button class="btn-add" style="background:#28a745; margin-top:10px;" onclick="saveBulkDoorsToServer()">
+                 🚀 تثبيت كل الأبواب المجهزة في السحاب دفعة واحدة
+              </button>
+          </div>
+
+          <button id="updateBtn" class="btn-add btn-update" onclick="saveUpdatedDoor()">تحديث البيانات المعدلة سحابياً 💾</button>
+      </div>
+      
+      <button onclick="cancelEditMode()" style="width: 100%; margin-top: 10px; padding: 10px; background: #666; color: white; border: none; border-radius: 5px;">إغلاق / إلغاء لوحة الأدمن</button>
+    </div>
+
+    <div id="catalogContainer">
+        <div id="loadingText" class="loading-spinner">⚡ جاري تحميل الكتالوج السريع... انتظر ثانية واحدة</div>
+
+        <h1 id="offers-section" class="section-title offers-title" style="display:none;">عروض لفترة محدودة 🔥🎁</h1>
+        <div id="offersContainer"></div>
+
+        <h1 id="turki" class="section-title">مصفح تركي عادي</h1>
+        <div id="turkiContainer"></div>
+
+        <h1 id="turki10" class="section-title" style="background: #118ab2;">🇹🇷 مصفح تركي (سمك 10 سم)</h1>
+        <div id="turki10Container"></div>
+
+        <h1 id="turki11" class="section-title" style="background: #06d6a0;">🇹🇷 مصفح تركي (سمك 11 سم)</h1>
+        <div id="turki11Container"></div>
+
+        <h1 id="masri" class="section-title">تركي تقفيل مصري</h1>
+        <div id="masriContainer"></div>
+
+        <h1 id="shini" class="section-title">مصفح صيني</h1>
+        <div id="shiniContainer"></div>
+
+        <h1 id="mصفح90" class="section-title" style="background: #8338ec;">🚪 مصفح عرض 90 سم (عرض خاص)</h1>
+        <div id="mصفح90Container"></div>
+
+        <h1 id="bbc-section" class="section-title">بي بي سي (BBC)</h1>
+        <div id="bbcContainer"></div>
+
+        <h1 id="wood-section" class="section-title">أبواب خشب كلي</h1>
+        <div id="woodContainer"></div>
+    </div>
+    
+    <div id="qrcode-canvas" style="padding: 10px; background: white; display: inline-block; display:none;"></div>
+
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { 
+        initializeFirestore, 
+        persistentLocalCache, 
+        persistentMultipleTabManager, 
+        collection, 
+        addDoc, 
+        doc, 
+        updateDoc, 
+        setDoc, 
+        deleteDoc, 
+        getDocs, 
+        getDoc 
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyCrCI24MhHorYjgYXnbA-lYBRbJdhcyweU",
+        authDomain: "alalamia-catalog-abd67.firebaseapp.com",
+        projectId: "alalamia-catalog-abd67",
+        storageBucket: "alalamia-catalog-abd67.firebasestorage.app",
+        messagingSenderId: "34917652157",
+        appId: "1:34917652157:web:c4bb397e716866e14209d4",
+        measurementId: "G-9VE4W8Q49W"
+      };
+
+      const app = initializeApp(firebaseConfig);
+
+      const db = initializeFirestore(app, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager()
+        })
+      });
+
+      const doorsCollection = collection(db, "doors");
+      const settingsDocRef = doc(db, "settings", "global_config");
+
+      let allDoorsGlobal = [];
+      let bulkDoorsQueue = [];
+      let isAdmin = false;
+      
+      let currentAdminPassword = "000999"; 
+      let CURRENT_WHATSAPP_PHONE = "201226580912"; 
+
+      window.checkAdminPassword = checkAdminPassword;
+      window.changeAdminPassword = changeAdminPassword;
+      window.updateSubOptions = updateSubOptions;
+      window.toggleOfferInput = toggleOfferInput;
+      window.addNewDoor = addNewDoor;
+      window.prepareDoorForBulk = prepareDoorForBulk;
+      window.removeFromBulkQueue = removeFromBulkQueue;
+      window.saveBulkDoorsToServer = saveBulkDoorsToServer;
+      window.quickAddOffer = quickAddOffer;
+      window.quickRemoveOffer = quickRemoveOffer;
+      window.enableEditMode = enableEditMode;
+      window.saveUpdatedDoor = saveUpdatedDoor;
+      window.cancelEditMode = cancelEditMode;
+      window.removeDoor = removeDoor;
+      window.uploadLogoToCloud = uploadLogoToCloud;
+      window.saveColorToCloud = saveColorToCloud;
+      window.savePhoneToCloud = savePhoneToCloud;
+      window.runBulkPriceUpdater = runBulkPriceUpdater;
+      window.runBulkThicknessUpdater = runBulkThicknessUpdater;
+      window.runBulkUsageUpdater = runBulkUsageUpdater;
+
+      async function loadSettings() {
+          try {
+              const docSnap = await getDoc(settingsDocRef);
+              if (docSnap.exists()) {
+                  const cloudData = docSnap.data();
+                  if (cloudData.mainColor) {
+                      document.documentElement.style.setProperty('--mainColor', cloudData.mainColor);
+                      document.getElementById('adminMainBtn').style.backgroundColor = cloudData.mainColor;
+                      document.getElementById('mainColorPicker').value = cloudData.mainColor;
+                  }
+                  if (cloudData.logoImg) {
+                      document.getElementById('siteLogo').src = cloudData.logoImg;
+                  }
+                  if (cloudData.ownerPhone) {
+                      CURRENT_WHATSAPP_PHONE = cloudData.ownerPhone;
+                      document.getElementById('ownerPhoneInput').value = cloudData.ownerPhone;
+                  }
+                  if (cloudData.adminPassword) {
+                      currentAdminPassword = cloudData.adminPassword;
+                  }
+              } else {
+                  await setDoc(settingsDocRef, { mainColor: "#002f6c", ownerPhone: "201226580912", logoImg: "", adminPassword: "000999" });
+              }
+          } catch (err) {
+              console.log("خطأ في الإعدادات:", err);
+          }
+      }
+
+      async function loadDoorsData() {
+          try {
+              document.getElementById('loadingText').style.display = "block";
+              const snapshot = await getDocs(doorsCollection);
+              allDoorsGlobal = [];
+              snapshot.forEach((doc) => {
+                  allDoorsGlobal.push({ fireId: doc.id, ...doc.data() });
+              });
+              document.getElementById('loadingText').style.display = "none";
+              refreshUI();
+          } catch (error) {
+              console.error("خطأ في تحميل الأبواب:", error);
+              document.getElementById('loadingText').innerText = "حدث خطأ في جلب البيانات من السحاب ❌";
+          }
+      }
+
+      loadSettings();
+      loadDoorsData();
+
+      async function reloadAfterChange() {
+          await loadDoorsData();
+      }
+
+      function refreshUI() {
+          const containers = [
+              'offersContainer', 'turkiContainer', 'turki10Container', 'turki11Container',
+              'masriContainer', 'shiniContainer', 'mصفح90Container', 'bbcContainer',
+              'woodContainer'
+          ];
+          containers.forEach(id => {
+              const el = document.getElementById(id);
+              if(el) el.innerHTML = "";
+          });
+
+          let hasOffers = false;
+
+          allDoorsGlobal.forEach(door => {
+              const doorDiv = document.createElement('div');
+              doorDiv.className = 'img-div';
+              doorDiv.id = door.id || door.fireId;
+
+              let checkboxHTML = `<div class="door-select-wrapper" style="${isAdmin ? 'display:flex;' : 'display:none;'}">
+                  <input type="checkbox" class="bulk-door-checkbox" data-id="${door.fireId}">
+                  <label style="font-size:11px; font-weight:bold; color:black;">تحديد</label>
+              </div>`;
+
+              let badgeHTML = (door.hasOffer === 'yes') ? `<div class="offer-badge">عرض خاص 🔥</div>` : "";
+
+              let adminActionsHTML = `<div class="admin-actions" style="${isAdmin ? 'display:block;' : 'display:none;'}">
+                  <button class="btn-action btn-edit" onclick="enableEditMode('${door.fireId}')"><i class="fas fa-edit"></i> تعديل</button>
+                  <button class="btn-action btn-del" onclick="removeDoor('${door.fireId}')"><i class="fas fa-trash-alt"></i> حذف</button>
+                  ${door.hasOffer === 'yes' 
+                      ? `<button class="btn-action btn-rem-offer" onclick="quickRemoveOffer('${door.fireId}')">إلغاء العرض</button>` 
+                      : `<button class="btn-action btn-add-offer" onclick="quickAddOffer('${door.fireId}')">عمل عرض</button>`}
+              </div>`;
+
+              let specsHTML = generateSpecsText(door);
+              let whatsappLink = getWhatsappLink(door);
+
+              doorDiv.innerHTML = `
+                  ${checkboxHTML}
+                  ${badgeHTML}
+                  <img class="img" src="${door.img || 'https://placehold.co/400x500?text=No+Image'}" alt="Door Image">
+                  <div class="dynamic-desc">
+                      <div>${specsHTML}</div>
+                      <a class="btn-whatsapp" href="${whatsappLink}" target="_blank">
+                          <i class="fab fa-whatsapp"></i> تواصل عبر الواتساب للاستفسار
+                      </a>
+                      ${adminActionsHTML}
+                  </div>
+              `;
+
+              if (door.hasOffer === 'yes') {
+                  document.getElementById('offersContainer').appendChild(doorDiv.cloneNode(true));
+                  hasOffers = true;
+              }
+
+              if (door.isWidth90 === true || door.isWidth90 === "true") {
+                  document.getElementById('mصفح90Container').appendChild(doorDiv.cloneNode(true));
+              }
+
+              if (door.mainType === 'turki') {
+                  if (door.thickness === '10') document.getElementById('turki10Container').appendChild(doorDiv);
+                  else if (door.thickness === '11') document.getElementById('turki11Container').appendChild(doorDiv);
+                  else document.getElementById('turkiContainer').appendChild(doorDiv);
+              } else if (door.mainType === 'masri') {
+                  document.getElementById('masriContainer').appendChild(doorDiv);
+              } else if (door.mainType === 'shini') {
+                  document.getElementById('shiniContainer').appendChild(doorDiv);
+              } else if (door.mainType === 'bbc') {
+                  document.getElementById('bbcContainer').appendChild(doorDiv);
+              } else if (door.mainType === 'wood') {
+                  document.getElementById('woodContainer').appendChild(doorDiv);
+              }
+          });
+
+          document.getElementById('offers-section').style.display = hasOffers ? 'block' : 'none';
+
+          if (window.location.hash) {
+              const targetId = window.location.hash.substring(1);
+              setTimeout(() => {
+                  const targetElement = document.getElementById(targetId);
+                  if (targetElement) {
+                      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+              }, 400); 
+          }
+      }
+
+      async function saveColorToCloud(colorHex) {
+          await setDoc(settingsDocRef, { mainColor: colorHex }, { merge: true });
+      }
+
+      async function savePhoneToCloud(newPhone) {
+          if(!newPhone || newPhone.trim() === "") return;
+          await setDoc(settingsDocRef, { ownerPhone: newPhone.trim() }, { merge: true });
+          alert("تم تحديث رقم واتساب المعرض سحابياً بنجاح! 📞🌐");
+      }
+
+      function uploadLogoToCloud() {
+          const file = document.getElementById('logoFile').files[0];
+          if (!file) return;
+          resizeAndCompressImage(file, 400, 200, function(compressedBase64) {
+              setDoc(settingsDocRef, { logoImg: compressedBase64 }, { merge: true }).then(() => {
+                  alert("تم رفع وتحديث لوجو المعرض في السحاب بنجاح! 🖼️🌐");
+              });
+          });
+      }
+
+      function resizeAndCompressImage(file, maxWidth, maxHeight, callback) {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = function (event) {
+              const img = new Image();
+              img.src = event.target.result;
+              img.onload = function () {
+                  const canvas = document.createElement('canvas');
+                  let width = img.width;
+                  let height = img.height;
+
+                  if (width > height) {
+                      if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; }
+                  } else {
+                      if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; }
+                  }
+                  canvas.width = width;
+                  canvas.height = height;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(img, 0, 0, width, height);
+                  const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                  callback(dataUrl);
+              };
+          };
+      }
+
+      function updateSubOptions() {
+          const mainType = document.getElementById('doorMainType').value;
+          const container = document.getElementById('extraOptions');
+          const widthGroup = document.getElementById('width90Group');
+          if(!container) return;
+          container.innerHTML = ""; 
+
+          if (mainType === 'turki' || mainType === 'masri' || mainType === 'shini') {
+              if(widthGroup) widthGroup.style.display = "flex";
+              container.innerHTML = `
+                  <div class="form-group"><label>السمك (سم):</label><select id="thickness"><option value="10">10 سم</option><option value="11" selected>11 سم</option></select></div>
+                  <div class="form-group"><label>عدد الكوالين:</label><input type="number" id="locks" value="3"></div>
+              `;
+          } else {
+              if(widthGroup) {
+                  widthGroup.style.display = "none";
+                  document.getElementById('isWidth90').checked = false;
+              }
+          }
+
+          if (mainType === 'bbc') {
+              container.innerHTML = `
+                  <div class="form-group"><label>الاستخدام:</label><select id="usage"><option value="غرفة">غرفة</option><option value="حمام">حمام</option><option value="غرفة وحمام">غرفة وحمام معاً</option></select></div>
+              `;
+          } else if (mainType === 'wood') {
+              container.innerHTML = `
+                  <div class="form-group"><label>السمك:</label><select id="woodThick"><option value="4ملي">4 ملي</option><option value="8ملي">8 ملي</option><option value="8ملي + 4ملي">8 ملي + 4 ملي</option><option value="كامل" selected>خشب كلي</option></select></div>
+                  <div class="form-group"><label>الاستخدام:</label><select id="usage"><option value="غرفة">غرفة</option><option value="حمام">حمام</option><option value="غرفة وحمام">غرفة وحمام معاً</option><option value="شقة">شقة 🏠</option><option value="غرفة وحمام وشقة">غرفة وحمام وشقة ✨</option></select></div>
+              `;
+          }
+      }
+      
+      function toggleOfferInput() {
+          const hasOffer = document.getElementById('hasOffer').value;
+          document.getElementById('oldPriceGroup').style.display = hasOffer === 'yes' ? 'block' : 'none';
+          document.getElementById('priceLabel').innerText = hasOffer === 'yes' ? "السعر الجديد بعد الخصم (جنيه):" : "السعر الحالي للبيع (جنيه):";
+      }
+
+      async function checkAdminPassword() {
+          if (isAdmin) { toggleAdminPanel(false); return; }
+          try {
+              const docSnap = await getDoc(settingsDocRef);
+              if (docSnap.exists() && docSnap.data().adminPassword) {
+                  currentAdminPassword = docSnap.data().adminPassword;
+              }
+          } catch(e) { console.log(e); }
+
+          const pass = prompt("دخل كلمة السر الأمنية السحابية 🔐:");
+          if (pass === currentAdminPassword) toggleAdminPanel(true);
+          else if (pass !== null) alert("كلمة السر خاطئة! 🛑");
+      }
+
+      async function changeAdminPassword() {
+          if (!isAdmin) return;
+          const oldPass = prompt("دخل الباسورد الحالي أولاً للأمان 🔑:");
+          if (oldPass === null) return;
+          if (oldPass !== currentAdminPassword) { alert("الباسورد الحالي غير صحيح! ❌"); return; }
+
+          const newPass = prompt("دخل الباسورد السحابي الجديد دلوقتي ⚙️:");
+          if (!newPass || newPass.trim() === "") { alert("الباسورد الجديد ما ينفعش يكون فاضي!"); return; }
+
+          try {
+              document.getElementById('loadingText').style.display = "block";
+              document.getElementById('loadingText').innerText = "⚡ جاري تشفير وحفظ الباسورد الجديد في السحاب...";
+              await setDoc(settingsDocRef, { adminPassword: newPass.trim() }, { merge: true });
+              currentAdminPassword = newPass.trim();
+              document.getElementById('loadingText').style.display = "none";
+              alert(`تم تحديث قفل السر بنجاح في السحاب! 🌍🔐 سيعمل الآن على جميع الأجهزة.`);
+          } catch(err) {
+              alert("حدث خطأ أثناء الاتصال بالسحاب لحفظ الباسورد!");
+              document.getElementById('loadingText').style.display = "none";
+          }
+      }
+
+      function toggleAdminPanel(show) {
+          isAdmin = show;
+          document.getElementById('adminPanel').style.display = show ? 'block' : 'none';
+          document.getElementById('changePassBtn').style.display = show ? 'block' : 'none';
+          refreshUI();
+          if(show) window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function generateSpecsText(data) {
+          let priceHTML = (data.hasOffer === 'yes') 
+              ? `<span class="old-price">${data.oldPrice} ج.م</span> <span class="new-price">${data.price} ج.م</span>`
+              : `<span class="normal-price">${data.price} ج.م</span>`;
+
+          let details = "";
+          let size90Badge = (data.isWidth90 === true || data.isWidth90 === "true") ? " [عرض 90سم] 🚪" : "";
+
+          if (data.mainType === 'turki' || data.mainType === 'masri' || data.mainType === 'shini') {
+              let typeMap = {"turki":"تركي", "masri":"تركي تقفيل مصري", "shini":"صيني"};
+              details = ` مصفح ${typeMap[data.mainType]} سمك ${data.thickness || '11'}سم - ${data.locks || '3'} كوالين${size90Badge}`;
+          } else if (data.mainType === 'bbc') {
+              details = ` بي بي سي مستورد مضاد للماء (${data.usage || 'غرفة'})`;
+          } else if (data.mainType === 'wood') {
+              let thickText = "";
+              if (data.woodThick === '8ملي + 4ملي') {
+                  thickText = "8ملي 2500 + 4ملي 1500";
+              } else if (data.woodThick === 'كامل') {
+                  thickText = "كلي";
+              } else {
+                  thickText = data.woodThick || 'كامل';
+              }
+              details = ` باب خشب سمك ${thickText} (${data.usage || 'غرفة'})`;
+          }
+
+          let r = parseInt(data.stockRight || 0);
+          let l = parseInt(data.stockLeft || 0);
+          let total = r + l;
+
+          let stockStatus = (total === 0) 
+              ? `<span class="out-of-stock">نَفِذَت الكمية ❌</span>`
+              : `<span class="in-stock">${r} يمين | ${l} شمال (الإجمالي: ${total} قطعة)</span>`;
+
+          return `${priceHTML} <br> ${details} <span class="stock-info">📦 المتوفر: ${stockStatus}</span>`;
+      }
+
+      function getWhatsappLink(data) {
+          let typeAr = {"turki":"مصفح تركي", "masri":"تركي تقفيل مصري", "shini":"مصفح صيني", "bbc":"بي بي سي مقاوم للماء", "wood":"خشب"}[data.mainType];
+          let baseUrl = window.location.href.split('#')[0];
+          let directDoorLink = `${baseUrl}#${data.id || data.fireId}`;
+          let msg = `مرحباً، أريد الاستفسار عن هذا المنتج المتاح في الكتالوج:
+`;
+          msg += `• القسم: ${typeAr} (${data.usage || ''})
+`;
+          msg += (data.hasOffer === 'yes') ? `• السعر في العرض: ${data.price} ج.م (بدلاً من ${data.oldPrice} ج.م) 🔥
+` : `• السعر: ${data.price} ج.م
+`;
+          if(data.thickness) msg += `• السمك: ${data.thickness} سم
+`;
+          if(data.mainType === 'wood' && data.woodThick) {
+              if (data.woodThick === '8ملي + 4ملي') {
+                  msg += `• السمك: 8ملي 2500 + 4ملي 1500
+`;
+              } else {
+                  msg += `• السمك: ${data.woodThick}
+`;
+              }
+          }
+          if(data.isWidth90) msg += `• العرض: 90 سم 🚪
+`;
+          let r = parseInt(data.stockRight || 0);
+          let l = parseInt(data.stockLeft || 0);
+          msg += `• المتوفر بالمخزن: (${r} يمين - ${l} شمال)
+`;
+          msg += `• رابط المعاينة المباشرة: 🌐👇
+${directDoorLink}`;
+          return `https://wa.me/${CURRENT_WHATSAPP_PHONE}?text=${encodeURIComponent(msg)}`;
+      }
+
+      async function addNewDoor() {
+          const fileInput = document.getElementById('doorFile');
+          const price = document.getElementById('doorPrice').value;
+          if (fileInput.files.length === 0 || !price) {
+              alert("املا البيانات واختار الصورة! 🛑");
+              return;
+          }
+          resizeAndCompressImage(fileInput.files[0], 800, 800, async function(compressedImg) {
+              const doorData = {
+                  id: 'door_' + Date.now() + Math.floor(Math.random() * 1000),
+                  mainType: document.getElementById('doorMainType').value,
+                  price: document.getElementById('doorPrice').value,
+                  hasOffer: document.getElementById('hasOffer').value,
+                  oldPrice: document.getElementById('doorOldPrice').value,
+                  stockRight: parseInt(document.getElementById('stockRight').value || 0),
+                  stockLeft: parseInt(document.getElementById('stockLeft').value || 0),
+                  img: compressedImg,
+                  thickness: document.getElementById('thickness')?.value || "",
+                  locks: document.getElementById('locks')?.value || "",
+                  usage: document.getElementById('usage')?.value || "",
+                  woodThick: document.getElementById('woodThick')?.value || "",
+                  isWidth90: document.getElementById('isWidth90').checked
+              };
+              await addDoc(doorsCollection, doorData);
+              resetForm();
+              alert("تم حفظ الباب وتثبيته لايف في السحاب بنجاح! 🎉🌐");
+              await reloadAfterChange();
+          });
+      }
+
+      function prepareDoorForBulk() {
+          const fileInput = document.getElementById('doorFile');
+          const price = document.getElementById('doorPrice').value;
+          if (fileInput.files.length === 0 || !price) {
+              alert("املا تفاصيل الباب واختار الصورة علشان تضيفه للقائمة! 🛑");
+              return;
+          }
+          resizeAndCompressImage(fileInput.files[0], 800, 800, function(compressedImg) {
+              const doorData = {
+                  id: 'door_' + Date.now() + Math.floor(Math.random() * 1000),
+                  mainType: document.getElementById('doorMainType').value,
+                  price: document.getElementById('doorPrice').value,
+                  hasOffer: document.getElementById('hasOffer').value,
+                  oldPrice: document.getElementById('doorOldPrice').value,
+                  stockRight: parseInt(document.getElementById('stockRight').value || 0),
+                  stockLeft: parseInt(document.getElementById('stockLeft').value || 0),
+                  img: compressedImg,
+                  thickness: document.getElementById('thickness')?.value || "",
+                  locks: document.getElementById('locks')?.value || "",
+                  usage: document.getElementById('usage')?.value || "",
+                  woodThick: document.getElementById('woodThick')?.value || "",
+                  isWidth90: document.getElementById('isWidth90').checked
+              };
+              bulkDoorsQueue.push(doorData);
+              updateBulkQueueUI();
+              
+              document.getElementById('doorFile').value = "";
+              document.getElementById('doorPrice').value = "";
+              document.getElementById('doorOldPrice').value = "";
+              document.getElementById('stockRight').value = "1";
+              document.getElementById('stockLeft').value = "0";
+              document.getElementById('hasOffer').value = "no";
+              document.getElementById('isWidth90').checked = false;
+              toggleOfferInput();
+          });
+      }
+
+      function updateBulkQueueUI() {
+          const container = document.getElementById('tempDoorsContainer');
+          const listDiv = document.getElementById('tempDoorsList');
+          listDiv.innerHTML = "";
+          if(bulkDoorsQueue.length === 0) {
+              container.style.display = "none";
+              return;
+          }
+          container.style.display = "block";
+          bulkDoorsQueue.forEach((door, index) => {
+              let typeAr = {"turki":"مصفح تركي", "masri":"تركي تقفيل مصري", "shini":"مصفح صيني", "bbc":"بي بي سي", "wood":"خشب"}[door.mainType];
+              const item = document.createElement('div');
+              item.className = "temp-door-item";
+              item.innerHTML = `
+                  <span><b>#${index+1}</b> ${typeAr} (${door.usage || ''}) - السعر: ${door.price} ج.م</span>
+                  <button onclick="removeFromBulkQueue(${index})" style="background:#dc3545; color:white; border:none; padding:4px 8px; border-radius:3px; cursor:pointer;">حذف</button>
+              `;
+              listDiv.appendChild(item);
+          });
+      }
+
+      function removeFromBulkQueue(index) {
+          bulkDoorsQueue.splice(index, 1);
+          updateBulkQueueUI();
+      }
+
+      async function saveBulkDoorsToServer() {
+          if(bulkDoorsQueue.length === 0) return;
+          if(!confirm("هل أنت متأكد من رفع جميع هذه الأبواب دفعة واحدة؟")) return;
+          
+          document.getElementById('loadingText').style.display = "block";
+          document.getElementById('loadingText').innerText = "⚡ جاري رفع الدفعة كاملة إلى السحاب لايف...";
+          
+          for(let door of bulkDoorsQueue) {
+              await addDoc(doorsCollection, door);
+          }
+          
+          bulkDoorsQueue = [];
+          updateBulkQueueUI();
+          alert("تم حفظ ورفع جميع الأبواب بنجاح! 📦🎉");
+          await reloadAfterChange();
+      }
+
+      async function quickAddOffer(fireId) {
+          const p = prompt("أدخل السعر الجديد بعد الخصم (جنيه):");
+          if (!p) return;
+          const door = allDoorsGlobal.find(d => d.fireId === fireId);
+          if (door) {
+              const doorRef = doc(db, "doors", fireId);
+              await updateDoc(doorRef, {
+                  hasOffer: "yes",
+                  oldPrice: door.price,
+                  price: p
+              });
+              alert("تم تطبيق العرض بنجاح! 🔥");
+              await reloadAfterChange();
+          }
+      }
+
+      async function quickRemoveOffer(fireId) {
+          const door = allDoorsGlobal.find(d => d.fireId === fireId);
+          if (door) {
+              const doorRef = doc(db, "doors", fireId);
+              await updateDoc(doorRef, {
+                  hasOffer: "no",
+                  price: door.oldPrice || door.price,
+                  oldPrice: ""
+              });
+              alert("تم إلغاء العرض بنجاح!");
+              await reloadAfterChange();
+          }
+      }
+
+      function enableEditMode(fireId) {
+          const door = allDoorsGlobal.find(d => d.fireId === fireId);
+          if (!door) return;
+
+          document.getElementById('editingDoorId').value = fireId;
+          document.getElementById('doorMainType').value = door.mainType;
+          updateSubOptions();
+
+          if (door.thickness) document.getElementById('thickness').value = door.thickness;
+          if (door.locks) document.getElementById('locks').value = door.locks;
+          if (door.usage) document.getElementById('usage').value = door.usage;
+          if (door.woodThick) document.getElementById('woodThick').value = door.woodThick;
+          
+          document.getElementById('isWidth90').checked = (door.isWidth90 === true || door.isWidth90 === "true");
+          document.getElementById('stockRight').value = door.stockRight || 0;
+          document.getElementById('stockLeft').value = door.stockLeft || 0;
+          document.getElementById('hasOffer').value = door.hasOffer;
+          toggleOfferInput();
+          
+          document.getElementById('doorPrice').value = door.price;
+          document.getElementById('doorOldPrice').value = door.oldPrice || "";
+
+          document.getElementById('submitBtn').style.display = "none";
+          document.getElementById('bulkPrepareBtn').style.display = "none"; 
+          document.getElementById('updateBtn').style.display = "block";
+          document.getElementById('panelTitle').innerText = "🛠️ تعديل بيانات الباب المحدد سحابياً";
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      async function saveUpdatedDoor() {
+          let fireId = document.getElementById('editingDoorId').value;
+          if(!fireId) return;
+          
+          const doorRef = doc(db, "doors", fireId);
+          let updatedFields = {
+              mainType: document.getElementById('doorMainType').value,
+              price: document.getElementById('doorPrice').value,
+              hasOffer: document.getElementById('hasOffer').value,
+              oldPrice: document.getElementById('doorOldPrice').value,
+              stockRight: parseInt(document.getElementById('stockRight').value || 0),
+              stockLeft: parseInt(document.getElementById('stockLeft').value || 0),
+              isWidth90: document.getElementById('isWidth90').checked,
+              thickness: document.getElementById('thickness')?.value || "",
+              locks: document.getElementById('locks')?.value || "",
+              usage: document.getElementById('usage')?.value || "",
+              woodThick: document.getElementById('woodThick')?.value || ""
+          };
+
+          const fileInput = document.getElementById('doorFile');
+          if (fileInput.files.length > 0) {
+              resizeAndCompressImage(fileInput.files[0], 800, 800, async function(compressedImg) {
+                  updatedFields.img = compressedImg;
+                  await updateDoc(doorRef, updatedFields);
+                  completeUpdate();
+              });
+          } else {
+              await updateDoc(doorRef, updatedFields);
+              completeUpdate();
+          }
+      }
+
+      async function completeUpdate() {
+          alert("تم تحديث الباب لايف بنجاح! 💾");
+          cancelEditMode();
+          await reloadAfterChange();
+      }
+
+      function cancelEditMode() {
+          resetForm();
+          if(document.getElementById('submitBtn')) document.getElementById('submitBtn').style.display = "block";
+          if(document.getElementById('bulkPrepareBtn')) document.getElementById('bulkPrepareBtn').style.display = "block"; 
+          if(document.getElementById('updateBtn')) document.getElementById('updateBtn').style.display = "none";
+          if(document.getElementById('panelTitle')) document.getElementById('panelTitle').innerText = "🛠️ إضافة وتعديل بضاعة (لايف سحابي)";
+          document.getElementById('adminPanel').style.display = "none";
+          isAdmin = false;
+          refreshUI();
+      }
+
+      async function removeDoor(fireId) {
+          if (!confirm("هل أنت متأكد من حذف هذا الباب نهائياً من السحاب؟ 🛑")) return;
+          await deleteDoc(doc(db, "doors", fireId));
+          alert("تم حذف الباب بنجاح!");
+          await reloadAfterChange();
+      }
+
+      async function runBulkPriceUpdater() {
+          const group = document.getElementById('bulkPriceFilterGroup').value;
+          const action = document.getElementById('bulkPriceAction').value;
+          const amount = parseInt(document.getElementById('bulkPriceAmount').value);
+
+          if (!amount || amount <= 0) {
+              alert("من فضلك أدخل مبلغ صحيح للتعديل!");
+              return;
+          }
+
+          let targets = [];
+          if (group === 'selected_only') {
+              const checkboxes = document.querySelectorAll('.bulk-door-checkbox:checked');
+              checkboxes.forEach(cb => targets.push(cb.getAttribute('data-id')));
+              if(targets.length === 0) {
+                  alert("لم تقم بتحديد أي أبواب من الكتالوج بالأسفل!");
+                  return;
+              }
+          } else if (group === 'all') {
+              targets = allDoorsGlobal.map(d => d.fireId);
+          } else {
+              targets = allDoorsGlobal.filter(d => d.mainType === group).map(d => d.fireId);
+          }
+
+          if(!confirm(`هل أنت متأكد من تعديل أسعار عدد (${targets.length}) باب؟`)) return;
+
+          document.getElementById('loadingText').style.display = "block";
+          document.getElementById('loadingText').innerText = "⚡ جاري تحديث الأسعار جملة في السحاب...";
+
+          for(let id of targets) {
+              const door = allDoorsGlobal.find(d => d.fireId === id);
+              if(door) {
+                  let currentP = parseInt(door.price);
+                  let newP = (action === 'plus') ? (currentP + amount) : (currentP - amount);
+                  if (newP < 0) newP = 0;
+
+                  const doorRef = doc(db, "doors", id);
+                  let updateData = { price: newP.toString() };
+                  
+                  if(door.hasOffer === 'yes' && door.oldPrice) {
+                      let currentOldP = parseInt(door.oldPrice);
+                      let newOldP = (action === 'plus') ? (currentOldP + amount) : (currentOldP - amount);
+                      updateData.oldPrice = newOldP.toString();
+                  }
+
+                  await updateDoc(doorRef, updateData);
+              }
+          }
+
+          alert("تم تحديث أسعار البضاعة المحددة بنجاح! 💰⚡");
+          await reloadAfterChange();
+      }
+
+      async function runBulkThicknessUpdater() {
+          const group = document.getElementById('bulkPriceFilterGroup').value;
+          const newThickness = document.getElementById('bulkThicknessAction').value;
+
+          let targets = [];
+          if (group === 'selected_only') {
+              const checkboxes = document.querySelectorAll('.bulk-door-checkbox:checked');
+              checkboxes.forEach(cb => targets.push(cb.getAttribute('data-id')));
+              if(targets.length === 0) {
+                  alert("لم تقم بتحديد أي أبواب خشبية من الكتالوج بالأسفل للتحديث!");
+                  return;
+              }
+          } else if (group === 'all') {
+              targets = allDoorsGlobal.filter(d => d.mainType === 'wood').map(d => d.fireId);
+          } else if (group === 'wood') {
+              targets = allDoorsGlobal.filter(d => d.mainType === 'wood').map(d => d.fireId);
+          } else {
+              alert("🚨 التحديث الجماعي للسمك ينطبق فقط على أبواب قسم الخشب! من فضلك اختر الأبواب المحددة بالـ Checkbox أو قسم الخشب بالكامل.");
+              return;
+          }
+
+          let woodTargets = targets.filter(id => {
+              const d = allDoorsGlobal.find(door => door.fireId === id);
+              return d && d.mainType === 'wood';
+          });
+
+          if(woodTargets.length === 0) {
+              alert("🚨 الأبواب التي قمت بتحديدها لا تحتوي على أبواب من قسم الخشب! هذا التعديل يخص الأبواب الخشبية فقط.");
+              return;
+          }
+
+          if(!confirm(`هل أنت متأكد من تغيير سُمك عدد (${woodTargets.length}) باب خشبي إلى (${newThickness})؟`)) return;
+
+          document.getElementById('loadingText').style.display = "block";
+          document.getElementById('loadingText').innerText = "⚡ جاري تحديث سُمك الأبواب جملة في السحاب...";
+
+          try {
+              for(let id of woodTargets) {
+                  const doorRef = doc(db, "doors", id);
+                  await updateDoc(doorRef, { woodThick: newThickness });
+              }
+              alert("🎉 تم تحديث سُمك الأبواب الخشبية المحددة بنجاح للمجمل!");
+              await reloadAfterChange();
+          } catch (error) {
+              console.error("خطأ في التحديث الجماعي للسمك:", error);
+              alert("حدث خطأ أثناء تحديث السمك سحابياً.");
+              document.getElementById('loadingText').style.display = "none";
+          }
+      }
+
+      async function runBulkUsageUpdater() {
+          const group = document.getElementById('bulkPriceFilterGroup').value;
+          const newUsage = document.getElementById('bulkUsageAction').value;
+
+          let targets = [];
+          if (group === 'selected_only') {
+              const checkboxes = document.querySelectorAll('.bulk-door-checkbox:checked');
+              checkboxes.forEach(cb => targets.push(cb.getAttribute('data-id')));
+              if(targets.length === 0) {
+                  alert("لم تقم بتحديد أي أبواب من الكتالوج بالأسفل لتحديث الاستخدام!");
+                  return;
+              }
+          } else if (group === 'all') {
+              targets = allDoorsGlobal.filter(d => d.mainType === 'wood' || d.mainType === 'bbc').map(d => d.fireId);
+          } else if (group === 'wood' || group === 'bbc') {
+              targets = allDoorsGlobal.filter(d => d.mainType === group).map(d => d.fireId);
+          } else {
+              alert("🚨 تحديث الاستخدام الجماعي ينطبق فقط على أبواب (الخشب) أو (بي بي سي)! من فضلك اختر النطاق المناسب.");
+              return;
+          }
+
+          let validTargets = targets.filter(id => {
+              const d = allDoorsGlobal.find(door => door.fireId === id);
+              return d && (d.mainType === 'wood' || d.mainType === 'bbc');
+          });
+
+          if(validTargets.length === 0) {
+              alert("🚨 الأبواب المحددة لا تحتوي على أبواب خشب أو بي بي سي قابلة لتعديل الاستخدام!");
+              return;
+          }
+
+          if(!confirm(`هل أنت متأكد من تغيير الاستخدام لعدد (${validTargets.length}) باب إلى (${newUsage})؟`)) return;
+
+          document.getElementById('loadingText').style.display = "block";
+          document.getElementById('loadingText').innerText = "⚡ جاري تحديث الاستخدام جملة في السحاب لايف...";
+
+          try {
+              for(let id of validTargets) {
+                  const doorRef = doc(db, "doors", id);
+                  await updateDoc(doorRef, { usage: newUsage });
+              }
+              alert("🎉 تم تحديث نوع الاستخدام للأبواب المحددة بنجاح في السحاب!");
+              await reloadAfterChange();
+          } catch (error) {
+              console.error("خطأ في التحديث الجماعي للاستخدام:", error);
+              alert("حدث خطأ أثناء تحديث نوع الاستخدام سحابياً.");
+              document.getElementById('loadingText').style.display = "none";
+          }
+      }
+
+      function resetForm() {
+          if(document.getElementById('editingDoorId')) document.getElementById('editingDoorId').value = "";
+          if(document.getElementById('doorFile')) document.getElementById('doorFile').value = "";
+          if(document.getElementById('doorPrice')) document.getElementById('doorPrice').value = "";
+          if(document.getElementById('doorOldPrice')) document.getElementById('doorOldPrice').value = "";
+          if(document.getElementById('stockRight')) document.getElementById('stockRight').value = "1";
+          if(document.getElementById('stockLeft')) document.getElementById('stockLeft').value = "0";
+          if(document.getElementById('hasOffer')) document.getElementById('hasOffer').value = "no";
+          if(document.getElementById('isWidth90')) document.getElementById('isWidth90').checked = false;
+          if(document.getElementById('doorMainType')) document.getElementById('doorMainType').value = "turki";
+          updateSubOptions();
+          toggleOfferInput();
+      }
+
+      new QRCode(document.getElementById("qrcode-canvas"), {
+          text: "https://charming-chimera-a75460.netlify.app/", 
+          width: 256,
+          height: 256,
+          colorDark : "#000000",
+          colorLight : "#ffffff",
+          correctLevel : QRCode.CorrectLevel.H
+      });
+
+    </script>
+  </body>
+</html>
