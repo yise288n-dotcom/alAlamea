@@ -1,0 +1,19 @@
+@font-face {
+    font-family: 'Cairo Play';
+    src: url('../fonts/Cairo_Play/CairoPlay-VariableFont_slnt,wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'El Messiri';
+    src: url('../fonts/El_Messiri/ElMessiri-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Work Sans';
+    src: url('../fonts/Work_Sans/WorkSans-VariableFont_wght.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+

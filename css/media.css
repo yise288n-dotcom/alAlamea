@@ -1,0 +1,211 @@
+/* ==========================================
+   🚨 تنسيقات عامة تضمن المرونة (مهمة جداً قبل الميديا)
+============================================ */
+#catalogContainer {
+  width: 95%;
+  margin: 0 auto;
+}
+/* تحويل حاويات الأبواب لنظام شبكة مرن افتراضياً */
+#offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+#masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+#woodContainer, #wood4Container, #wood8Container {
+  display: grid;
+  grid-template-columns: 1fr; /* موبايل: باب واحد في الصف */
+  gap: 20px;
+  padding: 15px 0;
+}
+
+/* ==========================================
+   /* شاشات الهواتف       */
+============================================ */
+@media (max-width: 770px) {
+  body {
+    padding-top: 12vh; /* مسافة عشان السلكتور الثابت فوق */
+  }
+  .selector {
+    padding: 0 3%;
+  }
+  .selector-i > p {
+    font-size: 3.8vw; /* تكبير خط الأقسام السريعة للموبايل */
+  }
+  .admin-toggle-btn, .change-pass-btn {
+    font-size: 3.5vw;
+    padding: 6px 10px;
+  }
+  .section-title {
+    font-size: 6.5vw; /* حجم متناسق للعناوين وميطلعش برة الشاشة */
+    margin: 20px 0 10px;
+    border-radius: 8px;
+  }
+  .img-div {
+    width: 100%; /* استغلال كامل المساحة في الموبايل */
+    margin-bottom: 25px;
+  }
+  .dynamic-desc {
+    font-size: 4.2vw;
+    padding: 12px;
+  }
+  .btn-whatsapp {
+    font-size: 4.5vw;
+    padding: 10px;
+  }
+  .btn-action {
+    font-size: 3.5vw;
+    padding: 10px;
+    width: 47%; /* زرارين جنب بعض في الموبايل */
+    display: inline-block;
+  }
+  .door-select-wrapper {
+    top: 10px;
+    left: 10px;
+    padding: 4px 8px;
+  }
+}
+
+/* ==========================================
+   /* شاشات الهواتف في الحالة المائلة (Landscape)     */
+============================================ */
+@media (max-height: 350px) {
+  .selector {
+    height: 14vh;
+  }
+  body {
+    padding-top: 16vh;
+  }
+  .logo-container {
+    height: 12vh;
+  }
+  .img {
+    max-height: 55vh; /* تقليل ارتفاع الصورة عشان متخدش الشاشة كلها بالعرض */
+  }
+  .selector-span {
+    width: 90vw;
+    max-height: 60vh;
+  }
+}
+
+/* ==========================================
+   /* الشاشات الاكبر (التابلت) */
+============================================ */
+@media (min-width: 771px) {
+  body {
+    padding-top: 90px;
+  }
+  .selector {
+    height: 80px;
+    padding: 0 40px;
+  }
+  .logo-container {
+    max-width: 120px;
+    height: 70px;
+  }
+  .selector-i > p {
+    font-size: 16px;
+  }
+  .admin-toggle-btn, .change-pass-btn {
+    font-size: 15px;
+    padding: 8px 16px;
+  }
+  .selector-span {
+    width: 450px; /* حجم ثابت وشيك بدل النسبة المئوية */
+    gap: 10px;
+  }
+  .selector-span > a {
+    font-size: 14px;
+    padding: 6px 12px;
+  }
+  .section-title {
+    font-size: 28px;
+    padding: 12px;
+    border-radius: 8px;
+  }
+  /* التابلت يعرض بابين جنب بعض في الصف */
+  #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+  #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+  #woodContainer, #wood4Container, #wood8Container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  .img-div {
+    width: 100%;
+    margin: 0;
+  }
+  .img {
+    height: 450px; /* توحيد ارتفاع الصور عشان الكروت تطلع مسطرة واحدة */
+    object-fit: cover;
+  }
+  .dynamic-desc {
+    font-size: 16px;
+    height: 180px; /* طول ثابت للوصف عشان الزراير تترتب على خط واحد */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .btn-whatsapp {
+    font-size: 16px;
+    padding: 8px;
+  }
+  .btn-whatsapp i {
+    font-size: 18px;
+  }
+  .btn-action {
+    font-size: 13px;
+    padding: 6px 10px;
+  }
+  .door-select-wrapper {
+    padding: 6px 10px;
+  }
+  .door-select-wrapper label {
+    font-size: 13px !important;
+  }
+}
+
+/* ==========================================
+   /* الشاشات الاكبر (الكمبيوتر)     */
+============================================ */
+@media (min-width: 996px) {
+  /* الكمبيوتر يعرض 3 أبواب جنب بعض في الصف */
+  #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+  #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+  #woodContainer, #wood4Container, #wood8Container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+  }
+  .img {
+    height: 480px;
+  }
+  .dynamic-desc {
+    font-size: 17px;
+    height: 190px;
+  }
+  /* تقسيم لوحة الأدمن لنصفين عشان متبقاش طويلة جداً على شاشة الكمبيوتر */
+  .admin-panel {
+    max-width: 900px;
+  }
+  .admin-panel .stock-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ==========================================
+   /* الشاشات الضخمة     */
+============================================ */
+@media (min-width: 1300px) {
+  #catalogContainer {
+    max-width: 1280px; /* تثبيت عرض المحتوى في الشاشات الواسعة جداً عشان متفرشش زيادة عن اللزوم */
+  }
+  /* الشاشات الضخمة تعرض 4 أبواب في الصف */
+  #offersContainer, #turkiContainer, #turki10Container, #turki11Container, 
+  #masriContainer, #shiniContainer, #mصفح90Container, #bbcContainer, 
+  #woodContainer, #wood4Container, #wood8Container {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+  }
+  .img {
+    height: 420px; /* تقليل الارتفاع نسبياً لأن العرض صغر (بقوا 4 كروت) فالتناسق يفضل مظبوط */
+  }
+  .dynamic-desc {
+    font-size: 16px;
+    height: 200px;
+  }
+}
